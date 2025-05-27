@@ -1,61 +1,33 @@
-# BI Dashboard para Inspeções
 
-Este dashboard foi desenvolvido para visualizar dados da collection Checklist do Firebase, permitindo filtrar e analisar informações de inspeções.
 
-## Instruções para Deploy no GitHub Pages
+<!--
+  <<< Author notes: Step 2 >>>
+  Start this step by acknowledging the previous step.
+  Define terms and link to docs.github.com.
+  Historic note: previous version checked for empty pull request, changed to the correct theme `minima`.
+-->
 
-1. Faça upload de todos os arquivos para o repositório GitHub
-2. Vá para "Settings" > "Pages" no seu repositório
-3. Em "Source", selecione "Deploy from a branch"
-4. Selecione a branch "main" e a pasta "/ (root)"
-5. Clique em "Save"
-6. Aguarde alguns minutos para a publicação
-7. Acesse o site em: https://mobilityedgeai.github.io/bi/
+## Step 2: Configure your site
 
-## Configuração de Segurança do Firebase
+_You turned on GitHub Pages! :tada:_
 
-Para que o dashboard funcione corretamente, você precisará ajustar as regras de segurança do Firestore:
+We'll work in a branch, `my-pages`, that I created for you to get this site looking great. :sparkle:
 
-1. Acesse o Firebase Console: https://console.firebase.google.com/
-2. Selecione seu projeto "sentinel-insights-o7f49d"
-3. Navegue até "Firestore Database" > "Rules"
-4. Atualize as regras para permitir acesso de leitura à collection "Checklist"
-5. Exemplo de regras:
+Jekyll uses a file titled `_config.yml` to store settings for your site, your theme, and reusable content like your site title and GitHub handle. You can check out the `_config.yml` file on the **Code** tab of your repository.
 
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Permitir acesso à collection Checklist para leitura a partir de qualquer origem
-    match /Checklist/{document=**} {
-      allow read: if true;
-      allow write: if false;
-    }
-    
-    // Regras para outras collections podem ser mais restritivas
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-```
+We need to use a blog-ready theme. For this activity, we will use a theme named "minima".
 
-## Embedando no FlutterFlow
+### :keyboard: Activity: Configure your site
 
-Para incorporar este dashboard em um aplicativo FlutterFlow:
+1. Browse to the `_config.yml` file in the `my-pages` branch.
+1. In the upper right corner, open the file editor.
+1. Add a `theme:` set to **minima** so it shows in the `_config.yml` file as below:
+   ```yml
+   theme: minima
+   ```
+1. (optional) You can modify the other configuration variables such as `title:`, `author:`, and `description:` to further customize your site.
+1. Commit your changes.
+1. (optional) Create a pull request to view all the changes you'll make throughout this course. Click the **Pull Requests** tab, click **New pull request**, set `base: main` and `compare:my-pages`.
+1. Wait about 20 seconds then refresh this page (the one you're following instructions from). [GitHub Actions](https://docs.github.com/en/actions) will automatically update to the next step.
 
-1. Use o componente WebView
-2. Configure a URL do GitHub Pages: https://mobilityedgeai.github.io/bi/
-3. Defina as dimensões conforme necessário para seu layout
 
-## Funcionalidades
-
-- Filtros por data, garagem, filial, motorista, placa e tipo de ativo
-- Cards de resumo com scorecard, total de ativos, inspeções e motoristas
-- Gráficos de evolução do scorecard, inspeções por mês e por ativo
-- Tabelas com dados de ativos, inspeções por status e não conformes
-- Exportação para CSV
-
-## Suporte
-
-Se precisar de ajustes adicionais ou tiver dúvidas sobre a implementação, entre em contato.
