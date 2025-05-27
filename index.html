@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Inspeção</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+        body {
+            background-color: #1e2124;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+        .dashboard-container {
+            padding: 20px;
+        }
+        .card {
+            background-color: #2a2e33;
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #2a2e33;
+            border-bottom: none;
+            padding: 15px;
+        }
+        .card-body {
+            padding: 15px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .score-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .score-value {
+            position: absolute;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .nav-tabs {
+            border-bottom: none;
+        }
+        .nav-tabs .nav-link {
+            color: #ffffff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 0;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: transparent;
+            border-bottom: 2px solid #00ffcc;
+            color: #00ffcc;
+        }
+        .table {
+            color: #ffffff;
+        }
+        .table thead th {
+            border-top: none;
+            border-bottom: 1px solid #3a3f44;
+        }
+        .table td, .table th {
+            border-top: 1px solid #3a3f44;
+        }
+        .btn-primary {
+            background-color: #00bcd4;
+            border-color: #00bcd4;
+        }
+        .btn-primary:hover {
+            background-color: #00a0b7;
+            border-color: #00a0b7;
+        }
+        .form-control {
+            background-color: #2a2e33;
+            border: 1px solid #3a3f44;
+            color: #ffffff;
+        }
+        .form-control:focus {
+            background-color: #2a2e33;
+            color: #ffffff;
+        }
+        .header {
+            background-color: #00796b;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .filters {
+            margin-bottom: 20px;
+        }
+        .status-card {
+            text-align: center;
+            padding: 15px;
+        }
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .status-label {
+            font-size: 0.9rem;
+            color: #aaaaaa;
+        }
+        .circle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .circle-green {
+            background-color: #00bfa5;
+        }
+        .circle-yellow {
+            background-color: #ffc107;
+        }
+        .circle-red {
+            background-color: #f44336;
+        }
+        .circle-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .circle-label {
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 5px;
+        }
+        .tab-content {
+            padding: 20px 0;
+        }
+        .table-responsive {
+            margin-top: 20px;
+        }
+        .table th {
+            background-color: #00bcd4;
+            color: white;
+        }
+        .export-btn {
+            float: right;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <h1><i class="bi bi-bar-chart-fill"></i> BI Inspeção</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid dashboard-container">
+        <div class="row filters">
+            <div class="col-md-2 mb-3">
+                <input type="date" id="dataInicial" class="form-control">
+            </div>
+            <div class="col-md-2 mb-3">
+                <input type="date" id="dataFinal" class="form-control">
+            </div>
+            <div class="col-md-2 mb-3">
+                <select id="filtroGaragem" class="form-control">
+                    <option value="">Garagem</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <select id="filtroFilial" class="form-control">
+                    <option value="">Filial</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <select id="filtroMotorista" class="form-control">
+                    <option value="">Motorista</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <select id="filtroPlaca" class="form-control">
+                    <option value="">Placa</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <select id="filtroTipoAtivo" class="form-control">
+                    <option value="">Tipo de Ativo</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <button id="btnFiltrar" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Filtrar
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Scorecard Inspeção</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="score-container">
+                            <canvas id="scoreChart"></canvas>
+                            <div class="score-value" id="scoreValue">0.0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Total de Ativos</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="status-value" id="totalAtivos">0</div>
+                            </div>
+                            <div class="col-md-6">
+                                <canvas id="ativosChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <div class="status-label">Executadas</div>
+                                <div class="status-value text-info" id="totalAtivosExecutadas">0</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="status-label">Pendentes</div>
+                                <div class="status-value text-danger" id="totalAtivosPendentes">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Total de Inspeções</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="status-value" id="totalInspecoes">0</div>
+                            </div>
+                            <div class="col-md-6">
+                                <canvas id="inspecoesChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <div class="status-label">Conforme</div>
+                                <div class="status-value text-info" id="totalInspecoesConforme">0</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="status-label">Não Conforme</div>
+                                <div class="status-value text-danger" id="totalInspecoesNaoConforme">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Total de Motoristas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="status-value" id="totalMotoristas">0</div>
+                        <div class="circle-container">
+                            <div>
+                                <div class="circle circle-green">
+                                    <span class="circle-value" id="motoristaBom">0</span>
+                                </div>
+                                <div class="circle-label">Bom</div>
+                            </div>
+                            <div>
+                                <div class="circle circle-yellow">
+                                    <span class="circle-value" id="motoristaSatisfatorio">0</span>
+                                </div>
+                                <div class="circle-label">Satisfatório</div>
+                            </div>
+                            <div>
+                                <div class="circle circle-red">
+                                    <span class="circle-value" id="motoristaCritico">0</span>
+                                </div>
+                                <div class="circle-label">Crítico</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Evolução do Scorecard de Inspeção por Mês</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="evolucaoChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Total de Inspeções por Mês</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="inspecoesMesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Total de Inspeções por Ativo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="inspecoesAtivoChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="ativos-tab" data-bs-toggle="tab" data-bs-target="#ativos" type="button" role="tab" aria-controls="ativos" aria-selected="true">Lista de Ativos</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="status-tab" data-bs-toggle="tab" data-bs-target="#status" type="button" role="tab" aria-controls="status" aria-selected="false">Inspeções por Status</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="naoconformes-tab" data-bs-toggle="tab" data-bs-target="#naoconformes" type="button" role="tab" aria-controls="naoconformes" aria-selected="false">Inspeções Não Conformes</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="ativos" role="tabpanel" aria-labelledby="ativos-tab">
+                        <button id="exportarAtivos" class="btn btn-primary export-btn">
+                            <i class="bi bi-download"></i> Exportar
+                        </button>
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="tabelaAtivos">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo de Ativo</th>
+                                        <th>Placa</th>
+                                        <th>Centro de Custo</th>
+                                        <th>Filial</th>
+                                        <th>Garagem</th>
+                                        <th>Não Conforme</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dados serão preenchidos via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="status" role="tabpanel" aria-labelledby="status-tab">
+                        <button id="exportarStatus" class="btn btn-primary export-btn">
+                            <i class="bi bi-download"></i> Exportar
+                        </button>
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="tabelaStatus">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo de Ativo</th>
+                                        <th>Placa</th>
+                                        <th>Centro de Custo</th>
+                                        <th>Filial</th>
+                                        <th>Garagem</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dados serão preenchidos via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="naoconformes" role="tabpanel" aria-labelledby="naoconformes-tab">
+                        <button id="exportarNaoConformes" class="btn btn-primary export-btn">
+                            <i class="bi bi-download"></i> Exportar
+                        </button>
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="tabelaNaoConformes">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo de Ativo</th>
+                                        <th>Placa</th>
+                                        <th>Centro de Custo</th>
+                                        <th>Filial</th>
+                                        <th>Garagem</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dados serão preenchidos via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="firebase_service.js?v=20250526-2"></script>
+    <script src="dashboard.js?v=20250526-2"></script>
+</body>
+</html>

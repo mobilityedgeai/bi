@@ -1,54 +1,61 @@
-<header>
+# BI Dashboard para Inspeções
 
-<!--
-  <<< Author notes: Course header >>>
-  Include a 1280×640 image, course title in sentence case, and a concise description in emphasis.
-  In your repository settings: enable template repository, add your 1280×640 social image, auto delete head branches.
-  Add your open source license, GitHub uses MIT license.
--->
+Este dashboard foi desenvolvido para visualizar dados da collection Checklist do Firebase, permitindo filtrar e analisar informações de inspeções.
 
-# GitHub Pages
+## Instruções para Deploy no GitHub Pages
 
-_Create a site or blog from your GitHub repositories with GitHub Pages._
+1. Faça upload de todos os arquivos para o repositório GitHub
+2. Vá para "Settings" > "Pages" no seu repositório
+3. Em "Source", selecione "Deploy from a branch"
+4. Selecione a branch "main" e a pasta "/ (root)"
+5. Clique em "Save"
+6. Aguarde alguns minutos para a publicação
+7. Acesse o site em: https://mobilityedgeai.github.io/bi/
 
-</header>
+## Configuração de Segurança do Firebase
 
-<!--
-  <<< Author notes: Step 1 >>>
-  Choose 3-5 steps for your course.
-  The first step is always the hardest, so pick something easy!
-  Link to docs.github.com for further explanations.
-  Encourage users to open new tabs for steps!
--->
+Para que o dashboard funcione corretamente, você precisará ajustar as regras de segurança do Firestore:
 
-## Step 1: Enable GitHub Pages
+1. Acesse o Firebase Console: https://console.firebase.google.com/
+2. Selecione seu projeto "sentinel-insights-o7f49d"
+3. Navegue até "Firestore Database" > "Rules"
+4. Atualize as regras para permitir acesso de leitura à collection "Checklist"
+5. Exemplo de regras:
 
-_Welcome to GitHub Pages and Jekyll :tada:!_
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Permitir acesso à collection Checklist para leitura a partir de qualquer origem
+    match /Checklist/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    // Regras para outras collections podem ser mais restritivas
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+```
 
-The first step is to enable GitHub Pages on this [repository](https://docs.github.com/en/get-started/quickstart/github-glossary#repository). When you enable GitHub Pages on a repository, GitHub takes the content that's on the main branch and publishes a website based on its contents.
+## Embedando no FlutterFlow
 
-### :keyboard: Activity: Enable GitHub Pages
+Para incorporar este dashboard em um aplicativo FlutterFlow:
 
-1. Open a new browser tab, and work on the steps in your second tab while you read the instructions in this tab.
-1. Under your repository name, click **Settings**.
-1. Click **Pages** in the **Code and automation** section.
-1. Ensure "Deploy from a branch" is selected from the **Source** drop-down menu, and then select `main` from the **Branch** drop-down menu.
-1. Click the **Save** button.
-1. Wait about _one minute_ then refresh this page (the one you're following instructions from). [GitHub Actions](https://docs.github.com/en/actions) will automatically update to the next step.
-   > Turning on GitHub Pages creates a deployment of your repository. GitHub Actions may take up to a minute to respond while waiting for the deployment. Future steps will be about 20 seconds; this step is slower.
-   > **Note**: In the **Pages** of **Settings**, the **Visit site** button will appear at the top. Click the button to see your GitHub Pages site.
+1. Use o componente WebView
+2. Configure a URL do GitHub Pages: https://mobilityedgeai.github.io/bi/
+3. Defina as dimensões conforme necessário para seu layout
 
-<footer>
+## Funcionalidades
 
-<!--
-  <<< Author notes: Footer >>>
-  Add a link to get support, GitHub status page, code of conduct, license link.
--->
+- Filtros por data, garagem, filial, motorista, placa e tipo de ativo
+- Cards de resumo com scorecard, total de ativos, inspeções e motoristas
+- Gráficos de evolução do scorecard, inspeções por mês e por ativo
+- Tabelas com dados de ativos, inspeções por status e não conformes
+- Exportação para CSV
 
----
+## Suporte
 
-Get help: [Post in our discussion board](https://github.com/orgs/skills/discussions/categories/github-pages) &bull; [Review the GitHub status page](https://www.githubstatus.com/)
-
-&copy; 2023 GitHub &bull; [Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_of_conduct.md) &bull; [MIT License](https://gh.io/mit)
-
-</footer>
+Se precisar de ajustes adicionais ou tiver dúvidas sobre a implementação, entre em contato.

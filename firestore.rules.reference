@@ -1,0 +1,21 @@
+// Arquivo com instruções de segurança para o Firebase
+// Este arquivo deve ser usado como referência para configurar as regras de segurança do Firestore
+
+// Regras de segurança recomendadas para o Firestore:
+/*
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Permitir acesso à collection Checklist para leitura a partir de qualquer origem
+    match /Checklist/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    // Regras para outras collections podem ser mais restritivas
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+*/
